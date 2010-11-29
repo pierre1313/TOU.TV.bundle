@@ -25,6 +25,6 @@
 		<string>Flash</string>
 	</array>
 	<key>PlexPluginDebug</key>
-	<string>0</string>
+	<string>1</string>
 </dict>
 </plist>
