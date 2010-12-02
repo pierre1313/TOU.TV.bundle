@@ -26,7 +26,7 @@ def Start():
 	
 	# Default icons for DirectoryItem and WebVideoItem in case there isn't an image
 	DirectoryItem.thumb = R(PLUGIN_ICON_DEFAULT)
-	RTMPVideoItem.thumb = R(PLUGIN_ICON_DEFAULT)
+	WebVideoItem.thumb  = R(PLUGIN_ICON_DEFAULT)
 	
 	# Set the default cache time
 	HTTP.SetCacheTime(1800)
@@ -119,7 +119,7 @@ def Show(sender, show):
 			except:
 				movie_thumb = None
 				
-			dir.Append(Function(RTMPVideoItem(Video, title = movie_title, subtitle = movie_date, summary = movie_summary, thumb = movie_thumb), video_url = show["url"]))
+			dir.Append(Function(WebVideoItem(Video, title = movie_title, subtitle = movie_date, summary = movie_summary, thumb = Function(Thumb, url = movie_thumb)), video_url = show["url"]))
 		else:
 			season_summary = data.xpath("//div[@id = 'detailsemission']/p")[0].text
 			
@@ -151,7 +151,7 @@ def Show(sender, show):
 			season_names.sort(lambda x, y: cmp(x.lower(), y.lower()))
 			
 			for season_name in season_names:
-				dir.Append(Function(DirectoryItem(Season, title = season_name, summary = season_summary, thumb = season_thumb), show_title = show["title"], season = show["seasons"][season_name])) 
+				dir.Append(Function(DirectoryItem(Season, title = season_name, summary = season_summary, thumb = Function(Thumb, url = season_thumb)), show_title = show["title"], season = show["seasons"][season_name])) 
 	except:
 		dir.header  = "Emission vide"
 		dir.message = "Cette émission n'a aucun contenu."
@@ -166,7 +166,7 @@ def Season(sender, show_title, season):
 	season.sort(lambda x, y: cmp(x["url"], y["url"]))
 	
 	for episode in season:
-		dir.Append(Function(RTMPVideoItem(Video, title = episode["name"], subtitle = episode["date"], thumb = episode["thumb"], summary = episode["summary"]), video_url = episode["url"]))
+		dir.Append(Function(WebVideoItem(Video, title = episode["name"], subtitle = episode["date"], thumb = Function(Thumb, url = episode["thumb"]), summary = episode["summary"]), video_url = episode["url"]))
 	
 	if len(dir) == 0:
 		dir.header  = "Saison vide"
@@ -193,3 +193,15 @@ def Video(sender, video_url):
 			clip_url   = None
 	
 	return Redirect(RTMPVideoItem(player_url, clip = clip_url))
+
+####################################################################################################
+
+def Thumb(url):
+	if url != None:
+		try:
+			image = HTTP.Request(url, cacheTime=CACHE_1MONTH)
+			return DataObject(image, 'image/jpeg')
+		except:
+			pass
+
+	return Redirect(R(PLUGIN_ICON_DEFAULT))
