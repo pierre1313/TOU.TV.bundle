@@ -38,12 +38,14 @@ def MainMenu():
 	dir = MediaContainer()
 
 	shows = []
-	data = XML.ElementFromURL(PLUGIN_URL + "/repertoire", isHTML = True)
+	raw_data = HTTP.Request(PLUGIN_URL + "/repertoire")
+	raw_data = raw_data.replace("style=\"display:none;\"/>", "style=\"display:none;\">")
+	data     = XML.ElementFromString(raw_data, isHTML = True)
 	
-	for c in data.xpath("//h1/.."):
+	for c in data.xpath("//h1[@class='titreemission']/.."):
 		show = {}
 		show["title"]      = c.find("h1").text
-		show["genre"]      = c.xpath("span[@class = 'genre']")[0].text
+		show["genre"]      = c.xpath("span[@class='genre']")[0].text
 		show["url"]        = c.get("href")
 		
 		try:
