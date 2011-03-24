@@ -191,7 +191,7 @@ def Video(sender, video_url):
 		player_url = None
 		clip_url   = None
 	
-	return Redirect(RTMPVideoItem(player_url, clip = clip_url, cwidth = width, height = height))
+	return Redirect(RTMPVideoItem(player_url, clip = clip_url, width = width, height = height))
 
 ####################################################################################################
 
