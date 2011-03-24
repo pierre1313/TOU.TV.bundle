@@ -183,18 +183,15 @@ def Video(sender, video_url):
 	video_data = HTTP.Request(PLUGIN_CONTENT_URL + re.compile("toutv.releaseUrl='(.+?)'").findall(video_data)[0] + '&format=SMIL')
 	
 	try:
-		player_url = "rtmp:" + re.compile('<meta base="rtmp:(.+?)"').findall(video_data)[0]
-		clip_url   = "mp4:" + re.compile('<ref src="mp4:(.+?)"').findall(video_data)[0]
+		player_url = "rtmp:" + re.compile('<ref src="rtmp:(.+?)"').findall(video_data)[0]
+		clip_url   = "mp4:" + re.compile('mp4:(.+?)"').findall(video_data)[0]
+		width      = re.compile('width="(.+?)"').findall(video_data)[0]
+		height     = re.compile('height="(.+?)"').findall(video_data)[0]
 	except:
-		try:
-			# You are not in a geographic region that has access to this content.
-			player_url = "http:" + re.compile('<meta base="http:(.+?)"').findall(video_data)[0]
-			clip_url   = re.compile('<ref src="(.+?)"').findall(video_data)[0]
-		except:
-			player_url = None
-			clip_url   = None
+		player_url = None
+		clip_url   = None
 	
-	return Redirect(RTMPVideoItem(player_url, clip = clip_url))
+	return Redirect(RTMPVideoItem(player_url, clip = clip_url, cwidth = width, height = height))
 
 ####################################################################################################
 
