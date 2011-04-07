@@ -1,6 +1,4 @@
 # -*- coding: latin-1 -*-
-
-from PMS import *
 import re, time
 
 # Plugin parameters
@@ -29,8 +27,8 @@ def Start():
 	WebVideoItem.thumb  = R(PLUGIN_ICON_DEFAULT)
 	
 	# Set the default cache time
-	HTTP.SetCacheTime(1800)
-	HTTP.SetHeader('User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12')
+	HTTP.CacheTime = 1800
+	HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12'
 
 ###################################################################################################
 
@@ -38,9 +36,9 @@ def MainMenu():
 	dir = MediaContainer()
 
 	shows = []
-	raw_data = HTTP.Request(PLUGIN_URL + "/repertoire")
+	raw_data = HTTP.Request(PLUGIN_URL + "/repertoire").content
 	raw_data = raw_data.replace("style=\"display:none;\"/>", "style=\"display:none;\">")
-	data     = XML.ElementFromString(raw_data, isHTML = True)
+	data     = HTML.ElementFromString(raw_data)
 	
 	for c in data.xpath("//h1[@class = 'titreemission']/.."):
 		show = {}
@@ -108,8 +106,8 @@ def Show(sender, show):
 	dir = MediaContainer(title2 = sender.itemTitle)
 	
 	try:
-		data     = XML.ElementFromURL(PLUGIN_URL + show["url"], isHTML = True)
-		raw_data = HTTP.Request(PLUGIN_URL + show["url"])
+		data     = HTML.ElementFromURL(PLUGIN_URL + show["url"])
+		raw_data = HTTP.Request(PLUGIN_URL + show["url"]).content
 		
 		if show["numseasons"] == 0:
 			movie_title   = data.xpath("//h1[@class = 'emission']")[0].text
@@ -179,9 +177,9 @@ def Season(sender, show_title, season):
 ####################################################################################################
 
 def Video(sender, video_url):
-	video_data = HTTP.Request(PLUGIN_URL + video_url)
-	video_data = HTTP.Request(PLUGIN_CONTENT_URL + re.compile("toutv.releaseUrl='(.+?)'").findall(video_data)[0] + '&format=SMIL')
-	
+	video_data = HTTP.Request(PLUGIN_URL + video_url).content
+	video_data = HTTP.Request(PLUGIN_CONTENT_URL + re.compile("toutv.releaseUrl='(.+?)'").findall(video_data)[0] + '&format=SMIL').content
+
 	try:
 		player_url = "rtmp:" + re.compile('<ref src="rtmp:(.+?)"').findall(video_data)[0]
 		clip_url   = "mp4:" + re.compile('mp4:(.+?)"').findall(video_data)[0]
@@ -190,6 +188,8 @@ def Video(sender, video_url):
 	except:
 		player_url = None
 		clip_url   = None
+		width      = 0
+		height     = 0
 	
 	return Redirect(RTMPVideoItem(player_url, clip = clip_url, width = width, height = height))
 
@@ -198,7 +198,7 @@ def Video(sender, video_url):
 def Thumb(url):
 	if url != None:
 		try:
-			image = HTTP.Request(url, cacheTime=CACHE_1MONTH)
+			image = HTTP.Request(url, cacheTime=CACHE_1MONTH).content
 			return DataObject(image, 'image/jpeg')
 		except:
 			pass
